@@ -1,40 +1,11 @@
 # NeuroTrain
 
-NeuroTrain is a minimal framework to learn deep learning internals step by step.
-The goal is educational clarity: start from tensors, then layers, losses,
-optimizers, datasets, and autograd.
+NeuroTrain is a minimal framework to learn deep learning internals step by step. It's purposly made without any external machine learning library.
 
-## Goals
-
-- Understand how a tensor object is built.
-- Build a simple MLP from basic layers.
-- Implement losses and optimizers with explicit code.
-- Train with a clear loop using train/validation datasets.
-- Learn reverse-mode autograd without hiding complexity.
-
-## Project Structure
-
-```
-Core/
-	tensor.py        # Tensor + autograd engine
-	layer.py         # Layer abstractions + Linear
-	activation.py    # relu, sigmoid, tanh
-	loss.py          # MSE, MAE, BCE, CCE
-	optimizer.py     # SGD, Adam
-Data/
-	dataset.py       # Dataset container + train/val split
-Evaluations/
-	eval.py          # Evaluation helpers (metrics on datasets)
-Project/
-	mlp.py           # Minimal MLP model
-Train/
-	train.py         # Trainer loop
-```
 
 ## Requirements
 
 - Python 3.10+
-- NumPy
 
 Install dependencies:
 
@@ -49,12 +20,6 @@ pip install -e .
 ```
 
 ## Run Tests
-
-Install dependencies first:
-
-```bash
-pip install -r requirements.txt
-```
 
 Run the full unit test suite from the project root:
 
@@ -122,12 +87,8 @@ Implemented:
 Not implemented yet:
 
 - Advanced layers (Conv, RNN, etc.)
-- Advanced regularization and schedulers
-- GPU acceleration
-- Full test suite and CI pipeline
-
-## Next Steps
-
-- Add more unit tests in `tests/`
-- Add examples in a dedicated `examples/` folder
-- Improve packaging with `pyproject.toml`
+- Regularization
+- K-Split Validation
+- Drop-Out
+- Data Agmentation
+- PostProcess
