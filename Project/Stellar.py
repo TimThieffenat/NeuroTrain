@@ -10,7 +10,8 @@ using the StellarClassPrediction dataset. It supports three modes:
 The model uses:
   - LayerNorm for input normalization
   - Three hidden layers with ReLU activation
-  - Dropout (50%) for regularization after each hidden layer
+  - Dropout (20%) for regularization after each hidden layer
+  - Class weights for handling dataset imbalance
   - Softmax output for multi-class classification
   - Adam optimizer with categorical cross-entropy loss
 """
@@ -26,7 +27,7 @@ from Core.normalization import LayerNorm
 from Core.activation import relu, softmax
 from Core.layer import Linear
 from Core.dropout import Dropout
-from Core.loss import categorical_cross_entropy
+from Core.loss import categorical_cross_entropy, compute_class_weights
 from Core.model import Model
 from Core.optimizer import Adam
 from Data.dataset import load_csv, train_val_split
@@ -85,6 +86,11 @@ if TRAIN:
     input_dim = train_dataset.x.shape[1]
     output_dim = train_dataset.y.shape[1]
 
+    # Compute class weights for imbalanced dataset
+    class_weights = compute_class_weights(train_dataset.y, method="balanced")
+    print(f"Class weights: {class_weights}")
+    print(f"  (Higher weight = rarer class, lower weight = more common class)\n")
+
     # Build model architecture
     model = Model()
     model.add(LayerNorm(input_dim))           # Normalize input features
@@ -103,11 +109,12 @@ if TRAIN:
     model.add(Linear(32, output_dim))         # Output layer: one neuron per class
     model.add(softmax)                        # Softmax for multi-class probabilities
 
-    # Configure trainer and optimizer
+    # Configure trainer with class weights for imbalanced dataset
     trainer = Trainer(
         model=model,
         loss_fn=categorical_cross_entropy,
         optimizer=Adam(model.parameters(), lr=0.001),
+        class_weights=class_weights,  # Automatically passed to loss function
     )
 
     # Train with validation-based early stopping and best-weight restore
@@ -120,7 +127,7 @@ if TRAIN:
         patience=PATIENCE,
         min_delta=MIN_DELTA,
         restore_best_weights=True,
-        save_metrics=["train_loss", "val_loss", "train_accuracy", "val_accuracy"],
+        save_metrics=["train_loss", "val_loss", "train_balanced_accuracy", "val_balanced_accuracy"],
     )
 
     trainer.plot_history(
@@ -129,8 +136,8 @@ if TRAIN:
         save_path=loss_plot_path)
     
     trainer.plot_history(
-        metric_name="accuracy",
-        title="Training and Validation Accuracy",
+        metric_name="balanced_accuracy",
+        title="Training and Validation Balanced Accuracy",
         save_path=accuracy_plot_path,
     )
 

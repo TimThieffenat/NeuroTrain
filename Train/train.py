@@ -18,16 +18,31 @@ class Trainer:
         Callable object that takes inputs and returns predictions.
     loss_fn:
         Function ``loss_fn(y_true, y_pred)`` returning a scalar tensor.
+        If loss_fn supports class_weights, they will be passed automatically.
     optimizer:
         Optimizer instance. Optional if you only want loss evaluation.
+    class_weights : np.ndarray, optional
+        Class weights for imbalanced datasets. Shape: (n_classes,)
+        Passed to loss_fn if it accepts a class_weights parameter.
     """
 
-    def __init__(self, model, loss_fn: Callable, optimizer=None):
+    def __init__(self, model, loss_fn: Callable, optimizer=None, class_weights: np.ndarray | None = None):
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
+        self.class_weights = class_weights
         self.history: list[dict[str, float]] = []
         self.metrics_history: dict[str, list[float]] = {}
+
+    def _call_loss_fn(self, y_true, y_pred):
+        """Call loss function with class_weights if supported."""
+        if self.class_weights is not None:
+            try:
+                return self.loss_fn(y_true, y_pred, class_weights=self.class_weights)
+            except TypeError:
+                # If loss_fn doesn't support class_weights, call without them
+                return self.loss_fn(y_true, y_pred)
+        return self.loss_fn(y_true, y_pred)
 
     def train(
         self,
@@ -76,7 +91,7 @@ class Trainer:
 
             for x_batch, y_batch in train_dataset.batches(batch_size=batch_size, shuffle=shuffle):
                 y_pred = self.model(x_batch)
-                loss = self.loss_fn(y_batch, y_pred)
+                loss = self._call_loss_fn(y_batch, y_pred)
                 train_losses.append(float(loss.numpy()))
 
                 if self.optimizer is not None:
@@ -254,7 +269,7 @@ class Trainer:
         self.model.eval()  # Disable dropout during evaluation
         for x_batch, y_batch in dataset.batches(batch_size=batch_size, shuffle=False):
             y_pred = self.model(x_batch)
-            loss = self.loss_fn(y_batch, y_pred)
+            loss = self._call_loss_fn(y_batch, y_pred)
             losses.append(float(loss.numpy()))
 
         if not losses:
@@ -281,10 +296,11 @@ def train(
     min_delta: float = 0.0,
     restore_best_weights: bool = True,
     save_metrics: list[str] | None = None,
+    class_weights: np.ndarray | None = None,
 ) -> list[dict[str, float]]:
     """High-level training helper using the Trainer class."""
 
-    trainer = Trainer(model=model, loss_fn=loss_fn, optimizer=optimizer)
+    trainer = Trainer(model=model, loss_fn=loss_fn, optimizer=optimizer, class_weights=class_weights)
     return trainer.train(
         train_dataset=train_dataset,
         val_dataset=val_dataset,
