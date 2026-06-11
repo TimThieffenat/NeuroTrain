@@ -79,16 +79,23 @@ print(metrics)
 
 Implemented:
 
-- Tensor operations with basic autograd
-- Linear layers and activations
-- Common losses and optimizers
-- Dataset and training loop
+- Tensor operations
+- Basi AutoGrad
+- Linear layers
+- Activations
+- Common losses
+- Optimizers
+- Dataset
+- Training loop
+- Exportation
+- DropOut
+- Normalization
 
 Not implemented yet:
 
 - Advanced layers (Conv, RNN, etc.)
 - Regularization
 - K-Split Validation
-- Drop-Out
+- Class Weights
 - Data Agmentation
 - PostProcess
