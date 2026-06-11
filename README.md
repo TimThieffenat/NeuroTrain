@@ -90,12 +90,17 @@ Implemented:
 - Exportation
 - DropOut
 - Normalization
+- Class Weigth
 
 Not implemented yet:
 
-- Advanced layers (Conv, RNN, etc.)
+- CNN
+- LSTM
+- GRU
+- XLSTM
+- MaxPool
+- Flatten
 - Regularization
 - K-Split Validation
-- Class Weights
 - Data Agmentation
 - PostProcess
