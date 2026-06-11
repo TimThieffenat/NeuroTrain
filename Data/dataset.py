@@ -147,12 +147,10 @@ def load_csv(
 			except ValueError:
 				if not np.issubdtype(output_dtype, np.floating):
 					raise ValueError(
-						"String feature columns require a floating dtype for one-hot encoding"
+						"String feature columns require a floating dtype for label encoding"
 					)
-				unique_values, encoded = np.unique(column, return_inverse=True)
-				one_hot = np.zeros((data.shape[0], len(unique_values)), dtype=output_dtype)
-				one_hot[np.arange(data.shape[0]), encoded] = 1.0
-				feature_blocks.append(one_hot)
+				_, encoded = np.unique(column, return_inverse=True)
+				feature_blocks.append(encoded.astype(output_dtype).reshape(-1, 1))
 
 		x_np = np.concatenate(feature_blocks, axis=1)
 		y_np = np.zeros((data.shape[0], 1), dtype=output_dtype)  # Dummy target
@@ -203,12 +201,10 @@ def load_csv(
 		except ValueError:
 			if not allow_one_hot:
 				raise ValueError(
-					"String feature columns require a floating dtype for one-hot encoding"
+					"String feature columns require a floating dtype for label encoding"
 				)
-			unique_values, encoded = np.unique(column, return_inverse=True)
-			one_hot = np.zeros((feature_data.shape[0], len(unique_values)), dtype=output_dtype)
-			one_hot[np.arange(feature_data.shape[0]), encoded] = 1.0
-			feature_blocks.append(one_hot)
+			_, encoded = np.unique(column, return_inverse=True)
+			feature_blocks.append(encoded.astype(output_dtype).reshape(-1, 1))
 
 	x_np = np.concatenate(feature_blocks, axis=1)
 

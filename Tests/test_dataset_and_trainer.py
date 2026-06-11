@@ -87,14 +87,15 @@ def test_dataset_load_csv_one_hot_encodes_categorical_features(tmp_path):
 
     ds = load_csv(csv_path, target_columns=-1, skip_header=True)
 
-    assert ds.x.shape == (3, 3)
+    # Categorical feature "color" is label-encoded (1 column), not one-hot (2 columns)
+    assert ds.x.shape == (3, 2)
     assert ds.y.shape == (3, 1)
-    # np.unique ordonne les categories: blue, red
+    # np.unique ordonne les categories: blue=0, red=1
     expected_x = np.array(
         [
-            [0.0, 1.0, 1.0],
-            [1.0, 0.0, 2.0],
-            [0.0, 1.0, 3.0],
+            [1.0, 1.0],
+            [0.0, 2.0],
+            [1.0, 3.0],
         ]
     )
     np.testing.assert_allclose(ds.x.numpy(), expected_x)
