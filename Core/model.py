@@ -44,7 +44,24 @@ class Model(Layer):
             params.extend(layer.parameters())
         return params
 
-    def predict(self, x: Tensor) -> Tensor:
-        """Alias for inference."""
+    def train(self) -> "Model":
+        """Set model to training mode (dropout active)."""
 
+        for layer in self.layers:
+            if hasattr(layer, "set_training_mode"):
+                layer.set_training_mode(True)
+        return self
+
+    def eval(self) -> "Model":
+        """Set model to evaluation mode (dropout inactive)."""
+
+        for layer in self.layers:
+            if hasattr(layer, "set_training_mode"):
+                layer.set_training_mode(False)
+        return self
+
+    def predict(self, x: Tensor) -> Tensor:
+        """Inference with dropout disabled."""
+
+        self.eval()
         return self(x)

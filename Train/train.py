@@ -72,6 +72,7 @@ class Trainer:
 
         for epoch in range(1, epochs + 1):
             train_losses: list[float] = []
+            self.model.train()  # Enable dropout during training
 
             for x_batch, y_batch in train_dataset.batches(batch_size=batch_size, shuffle=shuffle):
                 y_pred = self.model(x_batch)
@@ -84,6 +85,7 @@ class Trainer:
                     self.optimizer.step()
 
             train_loss = float(np.mean(train_losses)) if train_losses else float("nan")
+            self.model.eval()  # Disable dropout during validation
             val_loss = self.evaluate_loss(val_dataset, batch_size=batch_size)
 
             epoch_metrics: dict[str, float] = {"epoch": float(epoch)}
@@ -139,6 +141,7 @@ class Trainer:
     def _predict_dataset(self, dataset: Dataset, batch_size: int) -> tuple[np.ndarray, np.ndarray]:
         y_true_batches: list[np.ndarray] = []
         y_pred_batches: list[np.ndarray] = []
+        self.model.eval()  # Disable dropout during prediction
 
         for x_batch, y_batch in dataset.batches(batch_size=batch_size, shuffle=False):
             y_pred = self.model(x_batch)
@@ -248,6 +251,7 @@ class Trainer:
         """Compute average loss on a dataset."""
 
         losses: list[float] = []
+        self.model.eval()  # Disable dropout during evaluation
         for x_batch, y_batch in dataset.batches(batch_size=batch_size, shuffle=False):
             y_pred = self.model(x_batch)
             loss = self.loss_fn(y_batch, y_pred)

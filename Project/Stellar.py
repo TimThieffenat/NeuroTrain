@@ -9,7 +9,8 @@ using the StellarClassPrediction dataset. It supports three modes:
 
 The model uses:
   - LayerNorm for input normalization
-  - Two hidden layers with ReLU activation
+  - Three hidden layers with ReLU activation
+  - Dropout (50%) for regularization after each hidden layer
   - Softmax output for multi-class classification
   - Adam optimizer with categorical cross-entropy loss
 """
@@ -24,6 +25,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from Core.normalization import LayerNorm
 from Core.activation import relu, softmax
 from Core.layer import Linear
+from Core.dropout import Dropout
 from Core.loss import categorical_cross_entropy
 from Core.model import Model
 from Core.optimizer import Adam
@@ -46,7 +48,7 @@ loss_plot_path = "C:/Tim/NeuroT/Project/StellarClassPrediction/Results/loss_hist
 accuracy_plot_path = "C:/Tim/NeuroT/Project/StellarClassPrediction/Results/accuracy_history.png"
 
 # Execution flags
-TRAIN = False      # Train and save a new model
+TRAIN = True      # Train and save a new model
 EVAL = True       # Evaluate the trained model on validation data
 INFERENCE = True  # Make predictions on test data
 
@@ -88,10 +90,16 @@ if TRAIN:
     model.add(LayerNorm(input_dim))           # Normalize input features
     model.add(Linear(input_dim, 32))          # Hidden layer: 32 neurons
     model.add(relu)                           # ReLU activation
+    model.add(Dropout(0.2))                   # Dropout: 20% drop rate
     model.add(Linear(32, 32))                 # Hidden layer: 32 neurons
     model.add(relu)                           # ReLU activation
+    model.add(Dropout(0.2))                   # Dropout: 20% drop rate
     model.add(Linear(32, 32))                 # Hidden layer: 32 neurons
     model.add(relu)                           # ReLU activation
+    model.add(Dropout(0.2))                   # Dropout: 20% drop rate
+    model.add(Linear(32, 32))                 # Hidden layer: 32 neurons
+    model.add(relu)                           # ReLU activation
+    model.add(Dropout(0.2))                   # Dropout: 20% drop rate
     model.add(Linear(32, output_dim))         # Output layer: one neuron per class
     model.add(softmax)                        # Softmax for multi-class probabilities
 
@@ -106,7 +114,7 @@ if TRAIN:
     trainer.train(
         train_dataset,
         val_dataset,
-        epochs=200,
+        epochs=1000,
         batch_size=128,
         early_stopping=EARLY_STOPPING,
         patience=PATIENCE,
