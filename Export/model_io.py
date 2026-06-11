@@ -7,6 +7,7 @@ from typing import Any
 import numpy as np
 
 from Core.activation import relu, sigmoid, softmax, tanh
+from Core.dropout import Dropout
 from Core.layer import Activation, Layer, Linear
 from Core.model import Model
 from Core.normalization import BatchNorm, LayerNorm, InstanceNorm
@@ -143,7 +144,12 @@ def save_model(model: Model, file_path: str | Path) -> Path:
     if not hasattr(model, "layers"):
         raise ValueError("Model must expose a 'layers' attribute to be serialized")
 
-    layers_payload = [_serialize_layer(layer) for layer in model.layers]
+    # Dropout is a training-time regularization layer and should not be persisted.
+    layers_payload = [
+        _serialize_layer(layer)
+        for layer in model.layers
+        if not isinstance(layer, Dropout)
+    ]
     payload = {
         "format": _FORMAT_VERSION,
         "model_class": model.__class__.__name__,

@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 
 from Core.activation import relu
+from Core.dropout import Dropout
 from Core.layer import Linear
 from Core.model import Model
 from Core.tensor import Tensor
@@ -44,3 +45,19 @@ def test_saved_json_contains_layers_and_weights(tmp_path: Path):
     assert isinstance(payload["layers"], list)
     assert payload["layers"][0]["type"] == "Linear"
     assert "weight" in payload["layers"][0]
+
+
+def test_save_model_ignores_dropout_layers(tmp_path: Path):
+    model = Model()
+    model.add(Linear(3, 4))
+    model.add(relu)
+    model.add(Dropout(0.5))
+    model.add(Linear(4, 2))
+
+    model_path = tmp_path / "model_with_dropout.json"
+    save_model(model, model_path)
+    payload = json.loads(model_path.read_text(encoding="utf-8"))
+
+    layer_types = [layer["type"] for layer in payload["layers"]]
+    assert "Dropout" not in layer_types
+    assert layer_types == ["Linear", "Activation", "Linear"]
