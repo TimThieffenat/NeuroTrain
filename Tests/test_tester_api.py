@@ -2,15 +2,15 @@ import numpy as np
 
 from Core.activation import relu
 from Core.layer import Linear
-from Core.model import Model
+from Core.model import NeuralNetwork
 from Core.loss import mse_loss
 from Core.tensor import Tensor
 from Data.dataset import Dataset, train_val_split
 from Evaluation.eval import Tester
 
 
-def build_model() -> Model:
-    model = Model()
+def build_model() -> NeuralNetwork:
+    model = NeuralNetwork()
     model.add(Linear(2, 4))
     model.add(relu)
     model.add(Linear(4, 1))

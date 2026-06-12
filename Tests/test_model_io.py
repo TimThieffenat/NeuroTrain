@@ -6,13 +6,13 @@ import numpy as np
 from Core.activation import relu
 from Core.dropout import Dropout
 from Core.layer import Linear
-from Core.model import Model
+from Core.model import NeuralNetwork
 from Core.tensor import Tensor
 from Export.model_io import load_model, save_model
 
 
-def build_model(input_dim: int, hidden_dim: int, output_dim: int) -> Model:
-    model = Model()
+def build_model(input_dim: int, hidden_dim: int, output_dim: int) -> NeuralNetwork:
+    model = NeuralNetwork()
     model.add(Linear(input_dim, hidden_dim))
     model.add(relu)
     model.add(Linear(hidden_dim, output_dim))
@@ -48,7 +48,7 @@ def test_saved_json_contains_layers_and_weights(tmp_path: Path):
 
 
 def test_save_model_ignores_dropout_layers(tmp_path: Path):
-    model = Model()
+    model = NeuralNetwork()
     model.add(Linear(3, 4))
     model.add(relu)
     model.add(Dropout(0.5))

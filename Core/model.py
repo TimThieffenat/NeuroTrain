@@ -1,13 +1,83 @@
-"""High-level model container with a simple API."""
+"""Model abstractions and neural-network implementation."""
 
+from abc import ABC, abstractmethod
 from typing import Callable, Iterable
 
 from Core.layer import Activation, Layer
 from Core.tensor import Tensor
 
 
-class Model(Layer):
-    """Composable model container.
+class Model(ABC):
+    """Common contract for any trainable model in the framework."""
+
+    def set_training_mode(self, training: bool) -> None:
+        """Hook for model families that need train/eval behavior.
+
+        Default implementation is a no-op (useful for tree-based estimators).
+        """
+
+        _ = training
+
+    def train(self) -> "Model":
+        """Set model to training mode when applicable."""
+
+        self.set_training_mode(True)
+        return self
+
+    def eval(self) -> "Model":
+        """Set model to evaluation mode when applicable."""
+
+        self.set_training_mode(False)
+        return self
+
+    @abstractmethod
+    def predict(self, x: Tensor) -> Tensor:
+        """Run inference and return predictions."""
+
+
+class TreeModel(Model, ABC):
+    """Base class for tree-based models (Decision Tree, RF, XGBoost-style).
+
+    This class defines a common non-neural API so every tree estimator can
+    plug into evaluation and project scripts with a consistent interface.
+    """
+
+    def __init__(self):
+        self._is_fitted = False
+
+    @abstractmethod
+    def fit(self, x: Tensor, y: Tensor) -> "TreeModel":
+        """Train the estimator using input features and targets."""
+
+    @abstractmethod
+    def predict(self, x: Tensor) -> Tensor:
+        """Return model predictions for each sample."""
+
+    def predict_proba(self, x: Tensor) -> Tensor:
+        """Return class probabilities when available.
+
+        Tree classifiers should override this method. Regressors can keep the
+        default behavior and only implement ``predict``.
+        """
+
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not implement predict_proba"
+        )
+
+    @property
+    def is_fitted(self) -> bool:
+        """Whether the model has already been trained."""
+
+        return self._is_fitted
+
+    def _mark_fitted(self) -> None:
+        """Mark estimator as trained (to be called by subclasses)."""
+
+        self._is_fitted = True
+
+
+class NeuralNetwork(Model, Layer):
+    """Composable neural network container.
 
     This class allows building networks step by step:
 
@@ -18,7 +88,7 @@ class Model(Layer):
     def __init__(self, layers: Iterable[Layer] | None = None):
         self.layers = list(layers or [])
 
-    def add(self, block: Layer | Callable[[Tensor], Tensor], name: str | None = None) -> "Model":
+    def add(self, block: Layer | Callable[[Tensor], Tensor], name: str | None = None) -> "NeuralNetwork":
         """Append a layer or activation block to the model."""
 
         if isinstance(block, Layer):
@@ -44,24 +114,20 @@ class Model(Layer):
             params.extend(layer.parameters())
         return params
 
-    def train(self) -> "Model":
-        """Set model to training mode (dropout active)."""
+    def set_training_mode(self, training: bool) -> None:
+        """Toggle training/eval mode for layers that support it."""
 
         for layer in self.layers:
             if hasattr(layer, "set_training_mode"):
-                layer.set_training_mode(True)
-        return self
-
-    def eval(self) -> "Model":
-        """Set model to evaluation mode (dropout inactive)."""
-
-        for layer in self.layers:
-            if hasattr(layer, "set_training_mode"):
-                layer.set_training_mode(False)
-        return self
+                layer.set_training_mode(training)
 
     def predict(self, x: Tensor) -> Tensor:
         """Inference with dropout disabled."""
 
         self.eval()
         return self(x)
+
+
+# Backward-compatible alias during transition.
+NeuralNetworkModel = NeuralNetwork
+LegacyModel = NeuralNetwork

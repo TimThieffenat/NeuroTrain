@@ -9,7 +9,7 @@ import numpy as np
 from Core.activation import relu, sigmoid, softmax, tanh
 from Core.dropout import Dropout
 from Core.layer import Activation, Layer, Linear
-from Core.model import Model
+from Core.model import NeuralNetwork
 from Core.normalization import BatchNorm, LayerNorm, InstanceNorm
 from Core.tensor import Tensor
 
@@ -135,7 +135,7 @@ def _deserialize_layer(payload: dict[str, Any]) -> Layer:
     raise ValueError(f"Unsupported layer type in JSON: {layer_type}")
 
 
-def save_model(model: Model, file_path: str | Path) -> Path:
+def save_model(model: NeuralNetwork, file_path: str | Path) -> Path:
     """Save a model architecture and weights to JSON.
 
     The model must expose a ``layers`` attribute compatible with ``Model``.
@@ -162,8 +162,8 @@ def save_model(model: Model, file_path: str | Path) -> Path:
     return output_path
 
 
-def load_model(file_path: str | Path) -> Model:
-    """Load a model from JSON and return a ``Model`` instance."""
+def load_model(file_path: str | Path) -> NeuralNetwork:
+    """Load a model from JSON and return a ``NeuralNetwork`` instance."""
 
     input_path = Path(file_path)
     payload = json.loads(input_path.read_text(encoding="utf-8"))
@@ -178,7 +178,7 @@ def load_model(file_path: str | Path) -> Model:
         raise ValueError("Invalid model JSON: 'layers' must be a list")
 
     layers = [_deserialize_layer(item) for item in layers_payload]
-    return Model(layers)
+    return NeuralNetwork(layers)
 
 
 

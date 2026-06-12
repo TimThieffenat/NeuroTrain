@@ -2,16 +2,16 @@ import numpy as np
 
 from Core.activation import relu
 from Core.layer import Linear
-from Core.model import Model
+from Core.model import NeuralNetwork
 from Core.loss import mse_loss
 from Core.optimizer import SGD
 from Core.tensor import Tensor
 from Data.dataset import Dataset, load_csv, train_val_split
-from Train.train import Trainer
+from Train.train import NeuralNetworkTrainer
 
 
-def build_model() -> Model:
-    model = Model()
+def build_model() -> NeuralNetwork:
+    model = NeuralNetwork()
     model.add(Linear(2, 6))
     model.add(relu)
     model.add(Linear(6, 1))
@@ -139,7 +139,7 @@ def test_trainer_runs_and_returns_history():
 
     model = build_model()
     optimizer = SGD(model.parameters(), lr=0.01)
-    trainer = Trainer(model=model, loss_fn=mse_loss, optimizer=optimizer)
+    trainer = NeuralNetworkTrainer(model=model, loss_fn=mse_loss, optimizer=optimizer)
 
     history = trainer.train(
         train_dataset=train_ds,
@@ -167,7 +167,7 @@ def test_trainer_early_stopping_stops_before_max_epochs():
 
     model = build_model()
     optimizer = SGD(model.parameters(), lr=0.01)
-    trainer = Trainer(model=model, loss_fn=mse_loss, optimizer=optimizer)
+    trainer = NeuralNetworkTrainer(model=model, loss_fn=mse_loss, optimizer=optimizer)
 
     # Force non-improving validation to deterministically trigger early stopping.
     trainer.evaluate_loss = lambda _dataset, batch_size=32: 1.0  # type: ignore[assignment]
@@ -191,7 +191,7 @@ def test_trainer_early_stopping_validates_arguments():
     train_ds, val_ds = train_val_split(ds, val_ratio=0.2, shuffle=False)
 
     model = build_model()
-    trainer = Trainer(model=model, loss_fn=mse_loss, optimizer=SGD(model.parameters(), lr=0.01))
+    trainer = NeuralNetworkTrainer(model=model, loss_fn=mse_loss, optimizer=SGD(model.parameters(), lr=0.01))
 
     try:
         trainer.train(
@@ -230,7 +230,7 @@ def test_trainer_saves_requested_metrics_in_attribute():
     train_ds, val_ds = train_val_split(ds, val_ratio=0.2, shuffle=False)
 
     model = build_model()
-    trainer = Trainer(model=model, loss_fn=mse_loss, optimizer=SGD(model.parameters(), lr=0.01))
+    trainer = NeuralNetworkTrainer(model=model, loss_fn=mse_loss, optimizer=SGD(model.parameters(), lr=0.01))
 
     trainer.train(
         train_dataset=train_ds,

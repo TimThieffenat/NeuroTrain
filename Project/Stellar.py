@@ -28,12 +28,12 @@ from Core.activation import relu, softmax
 from Core.layer import Linear
 from Core.dropout import Dropout
 from Core.loss import categorical_cross_entropy, compute_class_weights
-from Core.model import Model
+from Core.model import NeuralNetwork
 from Core.optimizer import Adam
 from Data.dataset import load_csv, train_val_split
 from Evaluation.eval import Tester
 from Export.model_io import load_model, save_model, save_predictions
-from Train.train import Trainer
+from Train.train import NeuralNetworkTrainer
 
 
 # ============================================================================
@@ -76,6 +76,9 @@ dataset = load_csv(
 # Preserves class name mapping from original dataset
 train_dataset, val_dataset = train_val_split(dataset, val_ratio=0.2, shuffle=True)
 
+print(f"Training samples: {len(train_dataset)}, Validation samples: {len(val_dataset)}")
+print(f"Input features: {train_dataset.x.shape[1]}, Output classes: {train_dataset.y.shape[1]}")
+
 
 # ============================================================================
 # TRAINING
@@ -92,7 +95,7 @@ if TRAIN:
     print(f"  (Higher weight = rarer class, lower weight = more common class)\n")
 
     # Build model architecture
-    model = Model()
+    model = NeuralNetwork()
     model.add(LayerNorm(input_dim))           # Normalize input features
     model.add(Linear(input_dim, 32))          # Hidden layer: 32 neurons
     model.add(relu)                           # ReLU activation
@@ -110,10 +113,10 @@ if TRAIN:
     model.add(softmax)                        # Softmax for multi-class probabilities
 
     # Configure trainer with class weights for imbalanced dataset
-    trainer = Trainer(
+    trainer = NeuralNetworkTrainer(
         model=model,
         loss_fn=categorical_cross_entropy,
-        optimizer=Adam(model.parameters(), lr=0.001),
+        optimizer=Adam(model.parameters(), lr=0.0001),
         class_weights=class_weights,  # Automatically passed to loss function
     )
 

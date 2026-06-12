@@ -9,20 +9,20 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import numpy as np
 from Core.tensor import Tensor
-from Core.model import Model
+from Core.model import NeuralNetwork
 from Core.layer import Linear
 from Core.activation import relu
 from Core.loss import categorical_cross_entropy, compute_class_weights
 from Core.optimizer import Adam
 from Data.dataset import Dataset
-from Train.train import Trainer
+from Train.train import NeuralNetworkTrainer
 
 
 def test_trainer_with_class_weights():
 	"""Test that Trainer properly passes class_weights to loss function."""
 	
 	# Create simple model
-	model = Model()
+	model = NeuralNetwork()
 	model.add(Linear(5, 3))
 	model.add(relu)
 	model.add(Linear(3, 2))
@@ -49,7 +49,7 @@ def test_trainer_with_class_weights():
 	print(f"Class weights: {class_weights}")
 	
 	# Create trainer WITH class weights
-	trainer_weighted = Trainer(
+	trainer_weighted = NeuralNetworkTrainer(
 		model=model,
 		loss_fn=categorical_cross_entropy,
 		optimizer=Adam(model.parameters(), lr=0.01),
@@ -74,7 +74,7 @@ def test_trainer_without_class_weights():
 	"""Test that Trainer still works without class_weights."""
 	
 	# Create simple model
-	model = Model()
+	model = NeuralNetwork()
 	model.add(Linear(5, 3))
 	model.add(relu)
 	model.add(Linear(3, 2))
@@ -94,7 +94,7 @@ def test_trainer_without_class_weights():
 	)
 	
 	# Create trainer WITHOUT class weights
-	trainer = Trainer(
+	trainer = NeuralNetworkTrainer(
 		model=model,
 		loss_fn=categorical_cross_entropy,
 		optimizer=Adam(model.parameters(), lr=0.01),

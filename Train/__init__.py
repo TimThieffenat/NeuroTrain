@@ -1,5 +1,5 @@
 """Training and testing helpers."""
 
-from Train.train import Trainer, train
+from Train.train import NeuralNetworkTrainer, Trainer, train
 
-__all__ = ["Trainer", "train"]
+__all__ = ["NeuralNetworkTrainer", "Trainer", "train"]

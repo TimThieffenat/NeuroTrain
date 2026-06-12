@@ -9,7 +9,7 @@ from Data.dataset import Dataset
 from Evaluation.metrics import accuracy, precision_recall_f1, balanced_accuracy
 
 
-class Trainer:
+class NeuralNetworkTrainer:
     """Trainer for neural network models.
 
     Parameters
@@ -298,9 +298,9 @@ def train(
     save_metrics: list[str] | None = None,
     class_weights: np.ndarray | None = None,
 ) -> list[dict[str, float]]:
-    """High-level training helper using the Trainer class."""
+    """High-level training helper using the NeuralNetworkTrainer class."""
 
-    trainer = Trainer(model=model, loss_fn=loss_fn, optimizer=optimizer, class_weights=class_weights)
+    trainer = NeuralNetworkTrainer(model=model, loss_fn=loss_fn, optimizer=optimizer, class_weights=class_weights)
     return trainer.train(
         train_dataset=train_dataset,
         val_dataset=val_dataset,
@@ -314,3 +314,7 @@ def train(
         restore_best_weights=restore_best_weights,
         save_metrics=save_metrics,
     )
+
+
+# Backward-compatible alias during transition.
+Trainer = NeuralNetworkTrainer
